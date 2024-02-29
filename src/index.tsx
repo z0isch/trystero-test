@@ -12,16 +12,9 @@ const roomConfig = { appId: "aj_testing" };
 
 const App = () => {
   const [currentRoom, setCurrentRoom] = React.useState<string | null>(null);
-  const localStorage = React.useSyncExternalStore(
-    (listener) => {
-      window.addEventListener("storage", listener);
-      return () => {
-        window.removeEventListener("storage", listener);
-      };
-    },
-    () => window.localStorage
+  const [myRooms, setMyRooms] = React.useState<Set<string>>(
+    hostedRoomIds(window.localStorage)
   );
-  const myRooms = hostedRoomIds(localStorage);
 
   const [rooms, setRooms] = React.useState<Set<string>>(new Set());
 
@@ -32,7 +25,7 @@ const App = () => {
 
   React.useEffect(() => {
     room.current.onPeerJoin(() => {
-      sendRooms(Array.from(hostedRoomIds(window.localStorage)));
+      sendRooms(Array.from(myRooms));
     });
 
     return () => {
@@ -80,6 +73,12 @@ const App = () => {
             const roomId = crypto.randomUUID();
             saveStateToStorage(roomId, initialState);
             setCurrentRoom(roomId);
+            setMyRooms((rs) => {
+              const s = new Set<string>();
+              rs.forEach((r) => s.add(r));
+              rs.add(roomId);
+              return s;
+            });
             sendRooms([roomId]);
           }}
         >
@@ -91,6 +90,20 @@ const App = () => {
           <ul>
             {Array.from(myRooms).map((roomId) => (
               <li key={roomId}>
+                <button
+                  onClick={() => {
+                    window.localStorage.clear();
+                    setMyRooms((rs) => {
+                      const s = new Set<string>();
+                      rs.forEach((r) => s.add(r));
+                      s.delete(roomId);
+                      return s;
+                    });
+                    removeRooms([roomId]);
+                  }}
+                >
+                  ❌
+                </button>{" "}
                 <a
                   href="#"
                   onClick={() => {
