@@ -7,6 +7,14 @@ import {
   selfId,
 } from "trystero";
 
+export function getStateFromStorage<S>(roomId: string): S | null {
+  return JSON.parse(window.localStorage.getItem(`${roomId}:state`));
+}
+
+export function saveStateToStorage<S>(roomId: string, state: S) {
+  window.localStorage.setItem(`${roomId}:state`, JSON.stringify(state));
+}
+
 export function usePeerState<S extends DataPayload>(
   roomConfig: BaseRoomConfig & RelayConfig,
   roomId: string
@@ -14,16 +22,12 @@ export function usePeerState<S extends DataPayload>(
   state: S | "host-not-connected";
   setState: (s: S) => void;
 } {
-  const getStateFromStorage = (): S | null =>
-    JSON.parse(window.localStorage.getItem(`${roomId}:state`));
-
-  const saveStateToStorage = (state: S) =>
-    window.localStorage.setItem(`${roomId}:state`, JSON.stringify(state));
-
   const room = React.useRef(joinRoom(roomConfig, roomId));
-  const isHost = React.useRef<boolean>(getStateFromStorage() !== null);
+  const isHost = React.useRef<boolean>(getStateFromStorage(roomId) !== null);
   const host = React.useRef<string | null>(null);
-  const [state, setState] = React.useState<S | null>(getStateFromStorage());
+  const [state, setState] = React.useState<S | null>(
+    getStateFromStorage(roomId)
+  );
   const [peers, setPeers] = React.useState<string[]>([]);
 
   const [sendState, receiveState] = room.current.makeAction<S>("state");
@@ -67,7 +71,7 @@ export function usePeerState<S extends DataPayload>(
 
   React.useEffect(() => {
     if (isHost.current) {
-      saveStateToStorage(state);
+      saveStateToStorage(roomId, state);
     }
   }, [JSON.stringify(state)]);
 
