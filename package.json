@@ -1,0 +1,21 @@
+{
+  "scripts": {
+    "build": "esbuild src/index.tsx --bundle --minify --sourcemap --outfile=dist/index.js",
+    "babel-watch": "esbuild src/index.tsx --bundle --minify --sourcemap --outfile=dist/index.js --watch"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.60",
+    "@types/react-dom": "^18.2.19",
+    "esbuild": "0.20.1",
+    "live-server": "^1.2.2",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "htm": "^3.1.1",
+    "idiomorph": "^0.3.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "trystero": "^0.18.0",
+    "vhtml": "^2.2.0"
+  }
+}
