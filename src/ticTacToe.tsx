@@ -20,10 +20,12 @@ function Board({
   xIsNext,
   squares,
   onPlay,
+  onPlayAgain,
 }: {
   xIsNext: boolean;
   squares: string[];
   onPlay: (squares: string[]) => void;
+  onPlayAgain: () => void;
 }) {
   function handleClick(i: number) {
     if (calculateWinner(squares) || squares[i]) {
@@ -48,6 +50,7 @@ function Board({
 
   return (
     <>
+      {winner && <button onClick={onPlayAgain}>Play again</button>}
       <div className="status">{status}</div>
       <div className="board-row">
         <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
@@ -70,6 +73,11 @@ function Board({
 
 type State = { squares: string[]; currentMove: number };
 
+export const initialState: State = {
+  squares: Array(9).fill(null),
+  currentMove: 0,
+};
+
 export default function Game({
   roomConfig,
   roomId,
@@ -89,6 +97,9 @@ export default function Game({
         <Board
           xIsNext={xIsNext}
           squares={state.squares}
+          onPlayAgain={() => {
+            setState(initialState);
+          }}
           onPlay={(nextSquares) =>
             setState({
               squares: nextSquares,

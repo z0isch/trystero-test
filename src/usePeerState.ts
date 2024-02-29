@@ -7,6 +7,14 @@ import {
   selfId,
 } from "trystero";
 
+export function hostedRoomIds(localStorage: Storage): Set<string> {
+  const s = new Set<string>();
+  for (const i of Object.keys(localStorage)) {
+    s.add(i.split(":")[0]);
+  }
+  return s;
+}
+
 export function getStateFromStorage<S>(roomId: string): S | null {
   const s = window.localStorage.getItem(`${roomId}:state`);
   return s === null ? null : JSON.parse(s);
