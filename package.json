@@ -1,7 +1,8 @@
 {
   "scripts": {
-    "build": "esbuild src/index.tsx --bundle --minify --sourcemap --outfile=dist/index.js",
-    "babel-watch": "esbuild src/index.tsx --bundle --minify --sourcemap --outfile=dist/index.js --watch"
+    "build": "mkdir -p dist && cp index.html dist/index.html && esbuild src/index.tsx --bundle --minify --sourcemap --outfile=dist/index.js",
+    "babel-watch": "mkdir -p dist && cp index.html dist/index.html && esbuild src/index.tsx --bundle --minify --sourcemap --outfile=dist/index.js --watch",
+    "watch": "mkdir -p dist && cp index.html dist/index.html && cd dist && live-server"
   },
   "devDependencies": {
     "@types/react": "^18.2.60",
