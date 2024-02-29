@@ -35,6 +35,9 @@ export function usePeerState<S extends DataPayload>(
 
   receiveState((state) => {
     console.log("Receiving state:", { state });
+    if (isHost.current) {
+      saveStateToStorage(roomId, state);
+    }
     setState(state);
   });
 
@@ -69,17 +72,14 @@ export function usePeerState<S extends DataPayload>(
     }
   }, [peers]);
 
-  React.useEffect(() => {
-    if (isHost.current) {
-      saveStateToStorage(roomId, state);
-    }
-  }, [JSON.stringify(state)]);
-
   return {
     state: state ?? "host-not-connected",
     setState: (state: S) => {
       setState(state);
       sendState(state);
+      if (isHost.current) {
+        saveStateToStorage(roomId, state);
+      }
     },
   };
 }

@@ -38,7 +38,7 @@ const App = () => {
             setIsHost(false);
           }}
         >
-          {isHost ? "Clear Host" : "Leave game"}
+          Leave game
         </button>
       )}
       {!inGame && (
