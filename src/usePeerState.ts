@@ -8,7 +8,8 @@ import {
 } from "trystero";
 
 export function getStateFromStorage<S>(roomId: string): S | null {
-  return JSON.parse(window.localStorage.getItem(`${roomId}:state`));
+  const s = window.localStorage.getItem(`${roomId}:state`);
+  return s === null ? null : JSON.parse(s);
 }
 
 export function saveStateToStorage<S>(roomId: string, state: S) {
@@ -64,7 +65,7 @@ export function usePeerState<S extends DataPayload>(
   React.useEffect(() => {
     if (isHost.current) {
       console.log("Sending host and state:", { state, selfId, peers });
-      sendState(state);
+      if (state !== null) sendState(state);
       sendHost(selfId);
     } else if (!peers.find((p) => p === host.current)) {
       console.log("Host not found:", { host, peers });

@@ -1,16 +1,12 @@
 import * as React from "react";
-import ReactDOM from "react-dom";
-import { BaseRoomConfig, RelayConfig, Room } from "trystero";
 import { getStateFromStorage, saveStateToStorage } from "./usePeerState";
 import Game from "./ticTacToe";
+import ReactDOM from "react-dom/client";
 
 const App = () => {
   const roomConfig = { appId: "aj_testing" };
   const roomId = "aj";
   const [inGame, setInGame] = React.useState(
-    getStateFromStorage(roomId) !== null
-  );
-  const [isHost, setIsHost] = React.useState(
     getStateFromStorage(roomId) !== null
   );
 
@@ -24,7 +20,6 @@ const App = () => {
               currentMove: 0,
             });
             setInGame(true);
-            setIsHost(true);
           }}
         >
           Host
@@ -35,7 +30,6 @@ const App = () => {
           onClick={() => {
             window.localStorage.clear();
             setInGame(false);
-            setIsHost(false);
           }}
         >
           Leave game

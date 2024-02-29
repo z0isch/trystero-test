@@ -1,9 +1,14 @@
 import * as React from "react";
-import { useState } from "react";
 import { usePeerState } from "./usePeerState";
 import { BaseRoomConfig, RelayConfig } from "trystero";
 
-function Square({ value, onSquareClick }) {
+function Square({
+  value,
+  onSquareClick,
+}: {
+  value: string;
+  onSquareClick: () => void;
+}) {
   return (
     <button className="square" onClick={onSquareClick}>
       {value}
@@ -11,8 +16,16 @@ function Square({ value, onSquareClick }) {
   );
 }
 
-function Board({ xIsNext, squares, onPlay }) {
-  function handleClick(i) {
+function Board({
+  xIsNext,
+  squares,
+  onPlay,
+}: {
+  xIsNext: boolean;
+  squares: string[];
+  onPlay: (squares: string[]) => void;
+}) {
+  function handleClick(i: number) {
     if (calculateWinner(squares) || squares[i]) {
       return;
     }
@@ -88,7 +101,7 @@ export default function Game({
   );
 }
 
-function calculateWinner(squares) {
+function calculateWinner(squares: string[]) {
   const lines = [
     [0, 1, 2],
     [3, 4, 5],
