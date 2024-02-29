@@ -56,6 +56,12 @@ const App = () => {
       <button
         onClick={() => {
           window.localStorage.clear();
+          setMyRooms((rs) => {
+            const s = new Set<string>();
+            rs.forEach((r) => s.add(r));
+            s.delete(currentRoom);
+            return s;
+          });
           setCurrentRoom(null);
           removeRooms([currentRoom]);
         }}
