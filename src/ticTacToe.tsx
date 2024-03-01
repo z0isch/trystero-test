@@ -85,30 +85,49 @@ export default function Game({
   roomConfig: BaseRoomConfig & RelayConfig;
   roomId: string;
 }) {
-  const { state, setState } = usePeerState<State>(roomConfig, roomId);
+  const { peers, state, setState } = usePeerState<State>(roomConfig, roomId);
   if (state === "host-not-connected") {
     return <p>Waiting for host...</p>;
   }
   const xIsNext = state.currentMove % 2 === 0;
 
   return (
-    <div className="game">
-      <div className="game-board">
-        <Board
-          xIsNext={xIsNext}
-          squares={state.squares}
-          onPlayAgain={() => {
-            setState(initialState);
-          }}
-          onPlay={(nextSquares) =>
-            setState({
-              squares: nextSquares,
-              currentMove: state.currentMove + 1,
-            })
-          }
-        />
+    <>
+      <div className="game">
+        <div className="game-board">
+          <Board
+            xIsNext={xIsNext}
+            squares={state.squares}
+            onPlayAgain={() => {
+              setState(initialState);
+            }}
+            onPlay={(nextSquares) =>
+              setState({
+                squares: nextSquares,
+                currentMove: state.currentMove + 1,
+              })
+            }
+          />
+        </div>
       </div>
-    </div>
+      {Object.entries(peers).length > 0 && (
+        <>
+          {" "}
+          <hr />
+          <h2>Pings</h2>
+          <ul>
+            {Array.from(Object.entries(peers)).map(
+              ([peerId, ping]) =>
+                ping && (
+                  <li key={peerId}>
+                    {peerId}: {ping}ms
+                  </li>
+                )
+            )}
+          </ul>{" "}
+        </>
+      )}
+    </>
   );
 }
 

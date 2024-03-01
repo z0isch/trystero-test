@@ -1,9 +1,5 @@
 import * as React from "react";
-import {
-  getStateFromStorage,
-  hostedRoomIds,
-  saveStateToStorage,
-} from "./usePeerState";
+import { hostedRoomIds, saveStateToStorage, useRoom } from "./usePeerState";
 import Game, { initialState } from "./ticTacToe";
 import ReactDOM from "react-dom/client";
 import { joinRoom } from "trystero";
@@ -18,20 +14,12 @@ const App = () => {
 
   const [rooms, setRooms] = React.useState<Set<string>>(new Set());
 
-  const room = React.useRef(joinRoom(roomConfig, "lobby"));
-  const [sendRooms, receiveRooms] = room.current.makeAction<string[]>("rooms");
+  const { room, peers } = useRoom(roomConfig, "lobby", () =>
+    sendRooms(Array.from(myRooms))
+  );
+  const [sendRooms, receiveRooms] = room.makeAction<string[]>("rooms");
   const [removeRooms, receiveRemoveRooms] =
-    room.current.makeAction<string[]>("remove-rooms");
-
-  React.useEffect(() => {
-    room.current.onPeerJoin(() => {
-      sendRooms(Array.from(myRooms));
-    });
-
-    return () => {
-      room.current.leave();
-    };
-  }, []);
+    room.makeAction<string[]>("remove-rooms");
 
   receiveRooms((rooms) => {
     setRooms((roomSet) => {
@@ -125,8 +113,10 @@ const App = () => {
       )}
       <hr />
       <h2>Peer games</h2>
-      {rooms.size === 0 ? (
-        <p>Loading...</p>
+      {Object.keys(peers).length === 0 ? (
+        <p>No peers connected</p>
+      ) : rooms.size === 0 ? (
+        <p>No active games</p>
       ) : (
         <ul>
           {Array.from(rooms).map((roomId) => (
@@ -142,6 +132,23 @@ const App = () => {
             </li>
           ))}
         </ul>
+      )}
+      {Object.entries(peers).length > 0 && (
+        <>
+          {" "}
+          <hr />
+          <h2>Pings</h2>
+          <ul>
+            {Array.from(Object.entries(peers)).map(
+              ([peerId, ping]) =>
+                ping && (
+                  <li key={peerId}>
+                    {peerId}: {ping}ms
+                  </li>
+                )
+            )}
+          </ul>{" "}
+        </>
       )}
     </>
   );
