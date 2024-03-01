@@ -140,7 +140,7 @@ const App = () => {
           <h2>Pings</h2>
           <ul>
             {Array.from(Object.entries(peers)).map(
-              ([peerId, ping]) =>
+              ([peerId, { ping }]) =>
                 ping && (
                   <li key={peerId}>
                     {peerId}: {ping}ms

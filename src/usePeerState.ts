@@ -30,7 +30,7 @@ export function usePeerState<S extends DataPayload>(
   roomId: string
 ): {
   room: Room;
-  peers: Record<string, number | null>;
+  peers: Record<string, { ping: number | null }>;
   state: S | "host-not-connected";
   setState: (s: S) => void;
 } {

@@ -6,13 +6,13 @@ export function useRoom(
   roomId: string,
   onPeerJoin?: (peerId: string) => void,
   onPeerLeave?: (peerId: string) => void
-): { room: Room; peers: Record<string, number | null> } {
+): { room: Room; peers: Record<string, { ping: number | null }> } {
   const room = React.useRef(joinRoom(roomConfig, roomId));
-  const peerRef = React.useRef<Record<string, number | null>>({});
+  const peerRef = React.useRef<Record<string, { ping: number | null }>>({});
   const subFn = React.useCallback((subscribe: () => void) => {
     room.current.onPeerJoin((addMe) => {
       const clone = structuredClone(peerRef.current);
-      clone[addMe] = null;
+      clone[addMe] = { ping: null };
       peerRef.current = clone;
       onPeerJoin && onPeerJoin(addMe);
       subscribe();
@@ -49,7 +49,7 @@ export function useRoom(
       );
       const clone = structuredClone(peerRef.current);
       for (const peerId of Object.keys(clone)) {
-        clone[peerId] = pings[peerId] ? pings[peerId] : null;
+        clone[peerId] = { ping: pings[peerId] ? pings[peerId] : null };
       }
       peerRef.current = clone;
       subscribe();
