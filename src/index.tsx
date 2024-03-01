@@ -1,57 +1,43 @@
 import * as React from "react";
-import { hostedRoomIds, saveStateToStorage } from "./usePeerState";
+import { hostedRoomId, saveStateToStorage } from "./useHostState";
 import Game, { initialState } from "./ticTacToe";
 import ReactDOM from "react-dom/client";
 import { useRoom } from "./useRoom";
+import { enableMapSet } from "immer";
+import { useImmer } from "use-immer";
+import { usePeerState } from "./usePeerState";
+
+enableMapSet();
 
 const roomConfig = { appId: "aj_testing" };
 
 const App = () => {
   const [currentRoom, setCurrentRoom] = React.useState<string | null>(null);
-  const [myRooms, setMyRooms] = React.useState<Set<string>>(
-    hostedRoomIds(window.localStorage)
+  const [myRoom, setMyRoom] = useImmer<string | null>(
+    hostedRoomId(window.localStorage)
+  );
+  const { room, peers } = useRoom(
+    roomConfig,
+    "lobby",
+    (peerId) => onPeerJoin(peerId),
+    (peerId) => onPeerLeave(peerId)
   );
 
-  const [rooms, setRooms] = React.useState<Set<string>>(new Set());
-
-  const { room, peers } = useRoom(roomConfig, "lobby", () =>
-    sendRooms(Array.from(myRooms))
-  );
-  const [sendRooms, receiveRooms] = room.makeAction<string[]>("rooms");
-  const [removeRooms, receiveRemoveRooms] =
-    room.makeAction<string[]>("remove-rooms");
-
-  receiveRooms((rooms) => {
-    setRooms((roomSet) => {
-      const s = new Set<string>();
-      rooms.forEach((r) => s.add(r));
-      roomSet.forEach((r) => s.add(r));
-      return s;
-    });
-  });
-
-  receiveRemoveRooms((rooms) => {
-    setRooms((roomSet) => {
-      const s = new Set<string>();
-      roomSet.forEach((r) => s.add(r));
-      rooms.forEach((r) => s.delete(r));
-      return s;
-    });
-  });
+  const {
+    data: rooms,
+    sendData: sendRoom,
+    onPeerLeave,
+    onPeerJoin,
+  } = usePeerState<string>(room, "rooms", myRoom);
 
   return currentRoom ? (
     <>
       <button
         onClick={() => {
           window.localStorage.clear();
-          setMyRooms((rs) => {
-            const s = new Set<string>();
-            rs.forEach((r) => s.add(r));
-            s.delete(currentRoom);
-            return s;
-          });
+          setMyRoom(null);
           setCurrentRoom(null);
-          removeRooms([currentRoom]);
+          sendRoom(null);
         }}
       >
         Leave game
@@ -61,55 +47,39 @@ const App = () => {
     </>
   ) : (
     <>
-      {myRooms.size === 0 ? (
+      {myRoom ? (
+        <>
+          <h2>My games</h2>
+          <button
+            onClick={() => {
+              window.localStorage.clear();
+              setMyRoom(null);
+              sendRoom(null);
+            }}
+          >
+            ❌
+          </button>{" "}
+          <a
+            href="#"
+            onClick={() => {
+              setCurrentRoom(myRoom);
+            }}
+          >
+            {myRoom}
+          </a>
+        </>
+      ) : (
         <button
           onClick={() => {
             const roomId = crypto.randomUUID();
             saveStateToStorage(roomId, initialState);
             setCurrentRoom(roomId);
-            setMyRooms((rs) => {
-              const s = new Set<string>();
-              rs.forEach((r) => s.add(r));
-              rs.add(roomId);
-              return s;
-            });
-            sendRooms([roomId]);
+            setMyRoom(roomId);
+            sendRoom(roomId);
           }}
         >
           Host new game
         </button>
-      ) : (
-        <>
-          <h2>My games</h2>
-          <ul>
-            {Array.from(myRooms).map((roomId) => (
-              <li key={roomId}>
-                <button
-                  onClick={() => {
-                    window.localStorage.clear();
-                    setMyRooms((rs) => {
-                      const s = new Set<string>();
-                      rs.forEach((r) => s.add(r));
-                      s.delete(roomId);
-                      return s;
-                    });
-                    removeRooms([roomId]);
-                  }}
-                >
-                  ❌
-                </button>{" "}
-                <a
-                  href="#"
-                  onClick={() => {
-                    setCurrentRoom(roomId);
-                  }}
-                >
-                  {roomId}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </>
       )}
       <hr />
       <h2>Peer games</h2>
@@ -119,7 +89,7 @@ const App = () => {
         <p>No active games</p>
       ) : (
         <ul>
-          {Array.from(rooms).map((roomId) => (
+          {Array.from(rooms.values()).map((roomId) => (
             <li key={roomId}>
               <a
                 href="#"
@@ -137,7 +107,7 @@ const App = () => {
         <>
           {" "}
           <hr />
-          <h2>Pings</h2>
+          <h2>Peers</h2>
           <ul>
             {Array.from(Object.entries(peers)).map(
               ([peerId, { ping }]) =>

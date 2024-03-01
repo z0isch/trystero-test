@@ -1,5 +1,6 @@
 import * as React from "react";
 import { BaseRoomConfig, RelayConfig, Room, joinRoom } from "trystero";
+import { produce } from "immer";
 
 export function useRoom(
   roomConfig: BaseRoomConfig & RelayConfig,
@@ -8,20 +9,21 @@ export function useRoom(
   onPeerLeave?: (peerId: string) => void
 ): { room: Room; peers: Record<string, { ping: number | null }> } {
   const room = React.useRef(joinRoom(roomConfig, roomId));
-  const peerRef = React.useRef<Record<string, { ping: number | null }>>({});
+  const peersRef = React.useRef<Record<string, { ping: number | null }>>({});
+
   const subFn = React.useCallback((subscribe: () => void) => {
     room.current.onPeerJoin((addMe) => {
-      const clone = structuredClone(peerRef.current);
-      clone[addMe] = { ping: null };
-      peerRef.current = clone;
+      peersRef.current = produce(peersRef.current, (draftPeers) => {
+        draftPeers[addMe] = { ping: null };
+      });
       onPeerJoin && onPeerJoin(addMe);
       subscribe();
     });
+
     room.current.onPeerLeave((removeMe) => {
-      console.log({ removeMe });
-      const clone = structuredClone(peerRef.current);
-      delete clone[removeMe];
-      peerRef.current = clone;
+      peersRef.current = produce(peersRef.current, (draftPeers) => {
+        delete draftPeers[removeMe];
+      });
       onPeerLeave && onPeerLeave(removeMe);
       subscribe();
     });
@@ -30,7 +32,7 @@ export function useRoom(
     const pinger = setInterval(async () => {
       const pings: Record<string, number | null> = Object.fromEntries(
         await Promise.all(
-          Object.keys(peerRef.current).map(async (peerId) => {
+          Object.keys(peersRef.current).map(async (peerId) => {
             let pingThread;
             const pingCancel = new Promise<null>(
               (resolve) =>
@@ -47,11 +49,12 @@ export function useRoom(
           })
         )
       );
-      const clone = structuredClone(peerRef.current);
-      for (const peerId of Object.keys(clone)) {
-        clone[peerId] = { ping: pings[peerId] ? pings[peerId] : null };
-      }
-      peerRef.current = clone;
+
+      peersRef.current = produce(peersRef.current, (draftPeers) => {
+        for (const peerId of Object.keys(draftPeers)) {
+          draftPeers[peerId] = { ping: pings[peerId] ? pings[peerId] : null };
+        }
+      });
       subscribe();
     }, pingTime);
 
@@ -66,6 +69,6 @@ export function useRoom(
       clearInterval(pinger);
     };
   }, []);
-  const peers = React.useSyncExternalStore(subFn, () => peerRef.current);
+  const peers = React.useSyncExternalStore(subFn, () => peersRef.current);
   return { room: room.current, peers };
 }

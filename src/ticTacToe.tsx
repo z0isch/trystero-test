@@ -1,5 +1,5 @@
 import * as React from "react";
-import { usePeerState } from "./usePeerState";
+import { useHostState } from "./useHostState";
 import { BaseRoomConfig, RelayConfig } from "trystero";
 
 function Square({
@@ -85,7 +85,7 @@ export default function Game({
   roomConfig: BaseRoomConfig & RelayConfig;
   roomId: string;
 }) {
-  const { peers, state, setState } = usePeerState<State>(roomConfig, roomId);
+  const { peers, state, setState } = useHostState<State>(roomConfig, roomId);
   if (state === "host-not-connected") {
     return <p>Waiting for host...</p>;
   }
