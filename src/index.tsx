@@ -19,7 +19,7 @@ const App = () => {
   const { room, peers } = useRoom(
     roomConfig,
     "lobby",
-    (peerId) => onPeerJoin(peerId),
+    (peerId) => sendRoom(myRoom, peerId),
     (peerId) => onPeerLeave(peerId)
   );
 
@@ -27,8 +27,7 @@ const App = () => {
     data: rooms,
     sendData: sendRoom,
     onPeerLeave,
-    onPeerJoin,
-  } = usePeerState<string>(room, "rooms", myRoom);
+  } = usePeerState<string>(room, "rooms");
 
   return currentRoom ? (
     <>

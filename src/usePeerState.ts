@@ -4,13 +4,11 @@ import { useImmer } from "use-immer";
 export function usePeerState<S extends DataPayload>(
   room: Room,
   namespace: string,
-  initialData: S | null,
   onReceiveData?: (data: S, peerId: string, metadata?: JsonValue) => void
 ): {
   data: Map<string, S>;
   sendData: ActionSender<S | null>;
   onPeerLeave: (peerId: string) => void;
-  onPeerJoin: (peerId: string) => void;
 } {
   const [data, setData] = useImmer<Map<string, S>>(new Map());
   const [sendData, receiveData] = room.makeAction<S | null>(namespace);
@@ -34,6 +32,5 @@ export function usePeerState<S extends DataPayload>(
       setData((draftData) => {
         draftData.delete(peerId);
       }),
-    onPeerJoin: (peerId) => sendData(initialData, peerId),
   };
 }
