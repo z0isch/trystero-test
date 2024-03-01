@@ -4,9 +4,9 @@ import {
   DataPayload,
   RelayConfig,
   Room,
-  joinRoom,
   selfId,
 } from "trystero";
+import { useRoom } from "./useRoom";
 
 export function hostedRoomIds(localStorage: Storage): Set<string> {
   const s = new Set<string>();
@@ -23,46 +23,6 @@ export function getStateFromStorage<S>(roomId: string): S | null {
 
 export function saveStateToStorage<S>(roomId: string, state: S) {
   window.localStorage.setItem(`${roomId}:state`, JSON.stringify(state));
-}
-
-export function useRoom(
-  roomConfig: BaseRoomConfig & RelayConfig,
-  roomId: string,
-  onPeerJoin?: () => void
-): { room: Room; peers: Record<string, number | null> } {
-  const room = React.useRef(joinRoom(roomConfig, roomId));
-  const peerRef = React.useRef<Record<string, number | null>>({});
-  const subFn = React.useCallback((subscribe: () => void) => {
-    room.current.onPeerJoin((addMe) => {
-      const clone = structuredClone(peerRef.current);
-      clone[addMe] = null;
-      peerRef.current = clone;
-      onPeerJoin && onPeerJoin();
-      subscribe();
-    });
-    room.current.onPeerLeave((removeMe) => {
-      delete peerRef.current[removeMe];
-      subscribe();
-    });
-    const pinger = setInterval(async () => {
-      peerRef.current = Object.fromEntries(
-        await Promise.all(
-          Object.keys(peerRef.current).map(async (peerId) => [
-            peerId,
-            await room.current.ping(peerId),
-          ])
-        )
-      );
-      subscribe();
-    }, 2000);
-
-    return () => {
-      room.current.leave();
-      clearInterval(pinger);
-    };
-  }, []);
-  const peers = React.useSyncExternalStore(subFn, () => peerRef.current);
-  return { room: room.current, peers };
 }
 
 export function usePeerState<S extends DataPayload>(

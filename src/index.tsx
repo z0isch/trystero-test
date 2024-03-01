@@ -1,8 +1,8 @@
 import * as React from "react";
-import { hostedRoomIds, saveStateToStorage, useRoom } from "./usePeerState";
+import { hostedRoomIds, saveStateToStorage } from "./usePeerState";
 import Game, { initialState } from "./ticTacToe";
 import ReactDOM from "react-dom/client";
-import { joinRoom } from "trystero";
+import { useRoom } from "./useRoom";
 
 const roomConfig = { appId: "aj_testing" };
 
