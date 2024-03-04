@@ -1,5 +1,9 @@
 import * as React from "react";
-import { hostedRoomId, saveStateToStorage } from "./useHostState";
+import {
+  deleteStateFromStorage,
+  hostedRoomId,
+  saveStateToStorage,
+} from "./useHostState";
 import Game, { initialState } from "./ticTacToe";
 import ReactDOM from "react-dom/client";
 import { useRoom } from "./useRoom";
@@ -9,7 +13,9 @@ import { usePeerState } from "./usePeerState";
 
 enableMapSet();
 
-const roomConfig = { appId: "aj_testing" };
+const roomConfig = {
+  appId: "https://trystero-ab988-default-rtdb.firebaseio.com/",
+};
 
 const App = () => {
   const [currentRoom, setCurrentRoom] = React.useState<string | null>(null);
@@ -33,10 +39,7 @@ const App = () => {
     <>
       <button
         onClick={() => {
-          window.localStorage.clear();
-          setMyRoom(null);
           setCurrentRoom(null);
-          sendRoom(null);
         }}
       >
         Leave game
@@ -48,10 +51,10 @@ const App = () => {
     <>
       {myRoom ? (
         <>
-          <h2>My games</h2>
+          <h2>My game</h2>
           <button
             onClick={() => {
-              window.localStorage.clear();
+              deleteStateFromStorage(myRoom);
               setMyRoom(null);
               sendRoom(null);
             }}
@@ -108,14 +111,12 @@ const App = () => {
           <hr />
           <h2>Peers</h2>
           <ul>
-            {Array.from(Object.entries(peers)).map(
-              ([peerId, { ping }]) =>
-                ping && (
-                  <li key={peerId}>
-                    {peerId}: {ping}ms
-                  </li>
-                )
-            )}
+            {Array.from(Object.entries(peers)).map(([peerId, { ping }]) => (
+              <li key={peerId}>
+                {peerId}
+                {ping && ` ${ping}ms`}
+              </li>
+            ))}
           </ul>{" "}
         </>
       )}

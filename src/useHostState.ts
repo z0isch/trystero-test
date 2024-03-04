@@ -5,7 +5,7 @@ import {
   RelayConfig,
   Room,
   selfId,
-} from "trystero";
+} from "trystero/firebase";
 import { useRoom } from "./useRoom";
 
 export function hostedRoomId(localStorage: Storage): string | null {
@@ -15,13 +15,19 @@ export function hostedRoomId(localStorage: Storage): string | null {
   return null;
 }
 
+const stateKey = (roomId: string) => `${roomId}:state`;
+
 export function getStateFromStorage<S>(roomId: string): S | null {
-  const s = window.localStorage.getItem(`${roomId}:state`);
+  const s = window.localStorage.getItem(stateKey(roomId));
   return s === null ? null : JSON.parse(s);
 }
 
 export function saveStateToStorage<S>(roomId: string, state: S) {
-  window.localStorage.setItem(`${roomId}:state`, JSON.stringify(state));
+  window.localStorage.setItem(stateKey(roomId), JSON.stringify(state));
+}
+
+export function deleteStateFromStorage(roomId: string) {
+  window.localStorage.removeItem(stateKey(roomId));
 }
 
 export function useHostState<S extends DataPayload>(

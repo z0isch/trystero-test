@@ -1,5 +1,5 @@
 import * as React from "react";
-import { BaseRoomConfig, RelayConfig, Room, joinRoom } from "trystero";
+import { BaseRoomConfig, RelayConfig, Room, joinRoom } from "trystero/firebase";
 import { produce } from "immer";
 
 export function useRoom(

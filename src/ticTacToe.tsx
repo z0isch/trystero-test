@@ -114,16 +114,14 @@ export default function Game({
         <>
           {" "}
           <hr />
-          <h2>Pings</h2>
+          <h2>Peers</h2>
           <ul>
-            {Array.from(Object.entries(peers)).map(
-              ([peerId, { ping }]) =>
-                ping && (
-                  <li key={peerId}>
-                    {peerId}: {ping}ms
-                  </li>
-                )
-            )}
+            {Array.from(Object.entries(peers)).map(([peerId, { ping }]) => (
+              <li key={peerId}>
+                {peerId}
+                {ping && ` ${ping}ms`}
+              </li>
+            ))}
           </ul>{" "}
         </>
       )}

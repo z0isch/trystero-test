@@ -1,4 +1,4 @@
-import { ActionSender, DataPayload, JsonValue, Room } from "trystero";
+import { ActionSender, DataPayload, JsonValue, Room } from "trystero/firebase";
 import { useImmer } from "use-immer";
 
 export function usePeerState<S extends DataPayload>(
