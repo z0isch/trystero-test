@@ -10,12 +10,12 @@ import { useRoom } from "./useRoom";
 
 export function hostedRoomId(localStorage: Storage): string | null {
   for (const i of Object.keys(localStorage)) {
-    return i.split(":")[0];
+    if (i.startsWith("trystero:")) return i.split(":")[0];
   }
   return null;
 }
 
-const stateKey = (roomId: string) => `${roomId}:state`;
+const stateKey = (roomId: string) => `trystero:${roomId}:state`;
 
 export function getStateFromStorage<S>(roomId: string): S | null {
   const s = window.localStorage.getItem(stateKey(roomId));
@@ -70,7 +70,7 @@ export function useHostState<S extends DataPayload>(
       console.log("Host not found:", { host, peers });
       setState(null);
     }
-  }, [peers]);
+  }, [JSON.stringify(Object.keys(peers))]);
 
   return {
     room,
