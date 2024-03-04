@@ -10,7 +10,7 @@ import { useRoom } from "./useRoom";
 
 export function hostedRoomId(localStorage: Storage): string | null {
   for (const i of Object.keys(localStorage)) {
-    if (i.startsWith("trystero:")) return i.split(":")[0];
+    if (i.startsWith("trystero:")) return i.split(":")[1];
   }
   return null;
 }
@@ -63,8 +63,13 @@ export function useHostState<S extends DataPayload>(
 
   React.useEffect(() => {
     if (isHost.current) {
-      console.log("Sending host and state:", { state, selfId, peers });
-      if (state !== null) sendState(state);
+      console.log("Sending host and state:", {
+        state: getStateFromStorage(roomId),
+        selfId,
+        peers,
+      });
+      if (getStateFromStorage(roomId) !== null)
+        sendState(getStateFromStorage(roomId));
       sendHost(selfId);
     } else if (!Object.keys(peers).find((p) => p === host.current)) {
       console.log("Host not found:", { host, peers });
